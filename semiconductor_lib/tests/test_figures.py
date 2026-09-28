@@ -15,6 +15,8 @@ EXPECTED_AXES = {
     "dopant_ionization_vs_temperature": 2,
     "silicon_effective_mass_curvature": 2,
     "pn_junction_equilibrium_numerical_poisson": 3,
+    "pn_junction_debye_length_vs_depletion_width": 2,
+    "n_type_intrinsic_step_junction_numerical_poisson": 2,
     "deal_grove_oxide_growth_1000C": 1,
 }
 
