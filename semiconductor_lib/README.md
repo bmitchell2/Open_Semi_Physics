@@ -29,6 +29,17 @@ pip install -e .
 - `semiconductor_lib/electrostatics.py` — verified 1-D ideal MOS capacitor
   electrostatics (Kingston-Neustadter/Garrett-Brattain). Threshold voltage,
   LF/HF/deep-depletion capacitance, both p- and n-type substrates.
+- `semiconductor_lib/lattice.py` — diamond-cubic silicon geometry checked by
+  enumerating atom positions: neighbour shells, vacant tetrahedral sites,
+  planar densities for (100)/(110)/(111), packing fraction, bulk densities.
+- `semiconductor_lib/dopants.py` — Si band gap / DOS / n_i temperature fits
+  and the self-consistent shallow-dopant ionization solver (donors and
+  acceptors, freeze-out; non-degenerate, unreliable above ~1e18 cm^-3).
+- `semiconductor_lib/pnjunction.py` — abrupt p-n junction: closed-form
+  depletion approximation and a nonlinear-Poisson (Boltzmann, damped Newton)
+  numerical solver, with the depletion-approximation error quantified.
+- `semiconductor_lib/oxidation.py` — Deal-Grove thermal oxidation
+  (thickness, time, tau, (111)/(100) orientation factor, silicon consumption).
 - `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
   Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
 - `semiconductor_lib/reliability.py` — percolation breakdown concept model,
@@ -42,6 +53,11 @@ pip install -e .
   `electrostatics.py` and `lifetime.py` docstrings is checked here. Run
   once, trusted thereafter — don't re-derive these checks by hand in a
   new conversation.
+- `tests/test_lattice_dopants_pn_oxidation.py` — physics validation for
+  `lattice.py`, `dopants.py`, `pnjunction.py` and `oxidation.py`; each test
+  encodes a number verified while writing the corresponding Semiconductor
+  Notes page (neighbour shells, ionization fractions, depletion-approximation
+  error, Deal-Grove worked examples).
 - `examples/ngspice_moscap_cv.py` — cross-check of the hand-derived
   electrostatics against a real BSIM3 compact model (ngspice + a public
   PTM 180nm model card). See the module docstring for the verification
@@ -54,8 +70,9 @@ pip install -e . pytest
 pytest tests/ -v
 ```
 
-All 7 tests currently pass. Two are worth knowing about if they ever look
-like they've "regressed":
+All 32 tests currently pass (7 in `test_electrostatics.py`, 25 in
+`test_lattice_dopants_pn_oxidation.py`). Two of the electrostatics tests are
+worth knowing about if they ever look like they've "regressed":
 
 - **Cmin vs. the analytic max-depletion-width formula** is checked to 10%,
   not tighter, because the analytic formula freezes the depletion width at
