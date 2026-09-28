@@ -225,6 +225,68 @@ def fig_pn(NA=1e16, ND=5e16, stride=20):
     return fig
 
 
+# ---------------------------------------------------------- F5b Debye length vs. width
+def fig_debye_width_scaling(Ns=None):
+    """Total equilibrium depletion width W vs. the (smaller-side) Debye
+    length L_D, symmetric NA=ND=N, across doping. Shows W/L_D growing
+    slowly (8-13x over 1e15-1e18 cm^-3) because it is set by
+    2*sqrt(Vbi/Vt), and Vbi grows only logarithmically with N while L_D
+    shrinks as 1/sqrt(N)."""
+    notes_style()
+    Ns = Ns if Ns is not None else np.logspace(14, 19, 60)
+    LD = np.array([pnjunction.debye_length(N) for N in Ns]) * 1e7  # nm
+    W = np.array([pnjunction.depletion_approximation(N, N, 0.0)["W"] for N in Ns]) * 1e7
+    ratio = W / LD
+    fig, axs = plt.subplots(2, 1, figsize=(5.0, 5.0), sharex=True, gridspec_kw=dict(hspace=0.12))
+    a = axs[0]
+    a.loglog(Ns, LD, color=C["blue"], label="Debye length L_D")
+    a.loglog(Ns, W, color=C["red"], label="depletion width W")
+    a.set_ylabel("nm"); a.legend(frameon=False, fontsize=7, loc="lower left")
+    a.set_title("Symmetric p-n junction, NA = ND = N, 300 K: edge scale vs. total width", fontsize=7.6)
+    for N in (1e16, 1e18):
+        i = np.argmin(np.abs(Ns - N))
+        a.annotate("", xy=(Ns[i], W[i]), xytext=(Ns[i], LD[i]),
+                   arrowprops=dict(arrowstyle="<->", color=C["gray"], lw=0.8, shrinkA=1, shrinkB=1))
+        a.text(Ns[i] * 1.15, np.sqrt(W[i] * LD[i]), "%.0fx" % ratio[i], fontsize=6.6, color=C["gray"])
+    a = axs[1]
+    a.semilogx(Ns, ratio, color=C["dark"])
+    a.set_ylabel("W / L_D"); a.set_xlabel("doping N (cm⁻³)")
+    a.set_ylim(0, 14); a.axhline(1, color="#cbd5e0", lw=0.6)
+    a.text(2e14, 1.3, "one Debye length (edge only)", fontsize=6.6, color=C["gray"])
+    return fig
+
+
+# ------------------------------------------------------ F5c n-type / intrinsic junction
+def fig_n_intrinsic_junction(ND=1e16):
+    """Abrupt n-type/intrinsic step junction: intrinsic material at x<0,
+    ND-doped n-type at x>0. Shows the length scale blow up from nm to µm
+    on the intrinsic side, where there are no fixed dopant ions to
+    balance the exposed donor charge -- only piled-up majority electrons,
+    screened over that side's own (much larger, ni-set) Debye length."""
+    notes_style()
+    sol = pnjunction.solve_step_junction_poisson(0.0, ND)
+    xu = sol.x * 1e4  # um
+    fig, axs = plt.subplots(2, 1, figsize=(5.2, 5.2), sharex=True, gridspec_kw=dict(hspace=0.14))
+    a = axs[0]
+    span = 3.0
+    m = (xu > -span) & (xu < span)
+    a.semilogy(xu[m], sol.n[m], color=C["blue"], label="electrons n(x)")
+    a.semilogy(xu[m], sol.p[m], color=C["orange"], label="holes p(x)")
+    a.axhline(1e10, color="#a0aec0", ls=":", lw=1, label="n_i = 1e10 cm⁻³")
+    a.set_ylim(1e3, 3e16); a.yaxis.set_major_formatter(LOG_FORMATTER); a.yaxis.set_minor_formatter(NullFormatter())
+    a.set_ylabel("cm⁻³"); a.legend(frameon=False, fontsize=7, loc="center left", bbox_to_anchor=(0.02, 0.5))
+    a.set_title("n-type / intrinsic step junction, ND = 1e16 cm⁻³, 300 K (numerical Poisson)", fontsize=7.6)
+    box = dict(facecolor="white", edgecolor="none", alpha=0.85, pad=1.0)
+    a.text(-2.8, 3e5, "intrinsic side: µm-scale spread\n(piled-up electrons only, no ions)",
+           fontsize=6.4, color=C["gray"], bbox=box)
+    a.text(0.35, 3e5, "n-side: nm-scale edge\n(exposed donor ions)",
+           fontsize=6.4, color=C["gray"], bbox=box)
+    a = axs[1]
+    a.plot(xu[m], sol.psi[m], color=C["dark"])
+    a.set_ylabel("Potential (V)"); a.set_xlabel("x (µm)   [step junction at 0; intrinsic left, n-type right]")
+    return fig
+
+
 # ---------------------------------------------------------------- F6 Deal-Grove
 def fig_deal_grove(initial_oxide_um=0.023, n_points=90):
     """Deal-Grove growth, wet and dry, (111) and (100), 1000 C, with linear/parabolic asymptotes."""
@@ -260,6 +322,8 @@ FIGURES = {
     "dopant_ionization_vs_temperature": fig_ionization,
     "silicon_effective_mass_curvature": fig_ek,
     "pn_junction_equilibrium_numerical_poisson": fig_pn,
+    "pn_junction_debye_length_vs_depletion_width": fig_debye_width_scaling,
+    "n_type_intrinsic_step_junction_numerical_poisson": fig_n_intrinsic_junction,
     "deal_grove_oxide_growth_1000C": fig_deal_grove,
 }
 
