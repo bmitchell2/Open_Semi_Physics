@@ -40,6 +40,20 @@ pip install -e .
   numerical solver, with the depletion-approximation error quantified.
 - `semiconductor_lib/oxidation.py` — Deal-Grove thermal oxidation
   (thickness, time, tau, (111)/(100) orientation factor, silicon consumption).
+- `semiconductor_lib/bands.py` — silicon effective masses and band-curvature
+  helpers: conductivity vs. density-of-states masses (electrons and holes),
+  parabolic bands, numerical curvature -> mass, cyclotron-resonance fields.
+- `semiconductor_lib/carriers.py` — Fermi-Dirac occupation, 3-D density of
+  states, effective DOS, numerical-integral vs. Boltzmann cross-check,
+  Fermi potential, intrinsic-level offset, fixed-EF ionization estimate.
+- `semiconductor_lib/transport.py` — drift/diffusion relations: Einstein
+  relation, conductivity/resistivity, scattering time, drift velocity,
+  diffusion length, drift-diffusion current densities.
+- `semiconductor_lib/figures.py` — reproducible generators for the six
+  figures on the 2026-09-28 notes (unit cell, Fermi level, ionization,
+  E-k curvature, p-n junction, Deal-Grove), built from the modules above;
+  `build_all(outdir)` writes minified SVGs of 7-13 KB. Docstring explains
+  why mathtext must be avoided (glyph outlines double the SVG size).
 - `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
   Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
 - `semiconductor_lib/reliability.py` — percolation breakdown concept model,
@@ -58,6 +72,12 @@ pip install -e .
   encodes a number verified while writing the corresponding Semiconductor
   Notes page (neighbour shells, ionization fractions, depletion-approximation
   error, Deal-Grove worked examples).
+- `tests/test_bands_carriers_transport.py` — physics validation for
+  `bands.py`, `carriers.py` and `transport.py` (masses, Hu examples,
+  numerical-vs-Boltzmann carrier density, Einstein relation, resistivity,
+  equilibrium drift/diffusion cancellation).
+- `tests/test_figures.py` — every figure builds with the expected panels,
+  and the minified SVGs are well-formed and under 30 KB.
 - `examples/ngspice_moscap_cv.py` — cross-check of the hand-derived
   electrostatics against a real BSIM3 compact model (ngspice + a public
   PTM 180nm model card). See the module docstring for the verification
@@ -66,13 +86,15 @@ pip install -e .
 ## Running the tests
 
 ```bash
-pip install -e . pytest
+pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 32 tests currently pass (7 in `test_electrostatics.py`, 25 in
-`test_lattice_dopants_pn_oxidation.py`). Two of the electrostatics tests are
-worth knowing about if they ever look like they've "regressed":
+All 62 tests currently pass (7 in `test_electrostatics.py`, 25 in
+`test_lattice_dopants_pn_oxidation.py`, 22 in
+`test_bands_carriers_transport.py`, 8 in `test_figures.py`). Two of the
+electrostatics tests are worth knowing about if they ever look like they've
+"regressed":
 
 - **Cmin vs. the analytic max-depletion-width formula** is checked to 10%,
   not tighter, because the analytic formula freezes the depletion width at

@@ -14,5 +14,9 @@ dependencies = [
     "schemdraw",
 ]
 
+[project.optional-dependencies]
+figures = ["scour"]            # SVG minification (plotting.py, figures.py)
+test = ["pytest", "scour"]
+
 [tool.setuptools.packages.find]
 include = ["semiconductor_lib*"]
