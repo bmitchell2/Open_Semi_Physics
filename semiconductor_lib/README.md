@@ -1,0 +1,96 @@
+# semiconductor-lib
+
+Shared, verified code for the Semiconductor Notes knowledge base — built so
+figures and circuit diagrams don't get re-derived and re-debugged from
+scratch in every conversation. Companion to Section 31 ("Visual Generation
+Workflow and Tooling") of the Processing Instructions page in Notion.
+
+## Install
+
+Once this is pushed to a repo:
+
+```bash
+pip install git+https://github.com/<your-username>/semiconductor-lib.git
+```
+
+No credentials needed for this — cloning/installing from a public repo is a
+read, not a write.
+
+For local development:
+
+```bash
+pip install -e .
+```
+
+## Structure
+
+- `semiconductor_lib/constants.py` — physical constants, material
+  permittivities, thermal voltage.
+- `semiconductor_lib/electrostatics.py` — verified 1-D ideal MOS capacitor
+  electrostatics (Kingston-Neustadter/Garrett-Brattain). Threshold voltage,
+  LF/HF/deep-depletion capacitance, both p- and n-type substrates.
+- `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
+  Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
+- `semiconductor_lib/reliability.py` — percolation breakdown concept model,
+  Weibull extrinsic/intrinsic population separation (TDDB, RVS).
+- `semiconductor_lib/plotting.py` — shared matplotlib style preset and the
+  SVG minification pipeline (scour + whitespace/precision pass) that keeps
+  figures under Notion's inline-attachment size limit.
+- `semiconductor_lib/circuits.py` — reusable schemdraw building blocks
+  (circuit schematics and block/flow diagrams in one tool).
+- `tests/test_electrostatics.py` — physics validation: every claim in
+  `electrostatics.py` and `lifetime.py` docstrings is checked here. Run
+  once, trusted thereafter — don't re-derive these checks by hand in a
+  new conversation.
+- `examples/ngspice_moscap_cv.py` — cross-check of the hand-derived
+  electrostatics against a real BSIM3 compact model (ngspice + a public
+  PTM 180nm model card). See the module docstring for the verification
+  numbers from the most recent run.
+
+## Running the tests
+
+```bash
+pip install -e . pytest
+pytest tests/ -v
+```
+
+All 7 tests currently pass. Two are worth knowing about if they ever look
+like they've "regressed":
+
+- **Cmin vs. the analytic max-depletion-width formula** is checked to 10%,
+  not tighter, because the analytic formula freezes the depletion width at
+  exactly `psi_s = 2*phi_F`, while the full numerical solve lets `psi_s`
+  keep drifting slightly upward past threshold. That gap is real physics,
+  not solver error — see the test's docstring.
+- **Zerbst extraction** derives its equilibrium reference (`x_eq`) from the
+  simulated data's own late-time asymptote, not from an independently
+  computed formula. Using the formula instead introduces a small
+  floating-point/ODE-settling mismatch that biases the fitted `tau_g` and
+  `s0` by tens of percent — this was an actual bug caught while building
+  this package (2026-09-06), not a hypothetical one.
+
+## Running the ngspice cross-check
+
+```bash
+cd examples
+python3 ngspice_moscap_cv.py
+```
+
+Requires `ngspice` (`apt-get install ngspice`). Verified result (see the
+module docstring): the simulated accumulation/inversion plateau matches
+the analytic `Cox * Area` to within 2.4%, with the small excess explained
+by the model card's fixed gate-overlap capacitance — and the depletion
+minimum sits at roughly 30% of that plateau, a real dip in the right place
+relative to the model's threshold voltage.
+
+## What's not in here yet
+
+- Poly depletion, oxide-thickness/XRR, and series-resistance models
+  (built and verified in the 2026-09-05 "Moscaps and veractors" session,
+  not yet ported into this package as reusable functions).
+- A DEVSIM-based example (recommended in Processing Instructions Section
+  31 for device physics beyond what a compact model captures — not yet
+  built).
+- More schemdraw circuit-building blocks (common-source stage,
+  differential pair, current mirror, cascode — discussed but not yet
+  built).
