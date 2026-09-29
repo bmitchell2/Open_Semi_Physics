@@ -38,6 +38,13 @@ pip install -e .
 - `semiconductor_lib/pnjunction.py` — abrupt p-n junction: closed-form
   depletion approximation and a nonlinear-Poisson (Boltzmann, damped Newton)
   numerical solver, with the depletion-approximation error quantified.
+- `semiconductor_lib/diode.py` — biased p-n diode: forward I-V with SCR
+  (n = 2) current and series resistance, local ideality factor, forward-voltage
+  tempco (closed form and numerical, ~-2 mV/K), reverse leakage components vs
+  temperature (diffusion ∝ ni², generation ∝ ni W), Sze-Gibbons breakdown and
+  Miller multiplication, charge control (Q = I tau, C_diff), short-base transit
+  time, Kingston storage time, and a finite-difference reverse-recovery
+  transient (matches Kingston within 1 %). Tests: `tests/test_diode.py`.
 - `semiconductor_lib/oxidation.py` — Deal-Grove thermal oxidation
   (thickness, time, tau, (111)/(100) orientation factor, silicon consumption).
 - `semiconductor_lib/bands.py` — silicon effective masses and band-curvature
@@ -54,6 +61,11 @@ pip install -e .
   E-k curvature, p-n junction, Deal-Grove), built from the modules above;
   `build_all(outdir)` writes minified SVGs of 7-13 KB. Docstring explains
   why mathtext must be avoided (glyph outlines double the SVG size).
+- `semiconductor_lib/figures_devices.py` — generators for the 2026-09-29
+  diode (forward I-V/ideality, leakage Arrhenius, stored charge and diffusion
+  capacitance, reverse recovery) and MOS capacitor (band diagram at VG = 0,
+  W and Qinv vs VG) figures; `build_all(outdir)` writes minified SVGs of
+  6-16 KB. Tests: `tests/test_figures_devices.py`.
 - `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
   Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
 - `semiconductor_lib/reliability.py` — percolation breakdown concept model,
@@ -90,9 +102,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 62 tests currently pass (7 in `test_electrostatics.py`, 25 in
-`test_lattice_dopants_pn_oxidation.py`, 22 in
-`test_bands_carriers_transport.py`, 8 in `test_figures.py`). Two of the
+All 103 tests currently pass (as of 2026-09-29, including 12 in
+`test_diode.py` and 6 in `test_figures_devices.py`). Two of the
 electrostatics tests are worth knowing about if they ever look like they've
 "regressed":
 
@@ -107,6 +118,11 @@ electrostatics tests are worth knowing about if they ever look like they've
   floating-point/ODE-settling mismatch that biases the fitted `tau_g` and
   `s0` by tens of percent — this was an actual bug caught while building
   this package (2026-09-06), not a hypothetical one.
+
+One diode test is similar: **the reverse-recovery simulation is compared
+with Kingston using the reverse current actually drawn during storage**
+(about 3.5 % above V_R/R, because the junction still holds ~+0.7 V then).
+Using the nominal V_R/R instead produces a spurious ~4 % mismatch.
 
 ## Running the ngspice cross-check
 
@@ -129,7 +145,8 @@ relative to the model's threshold voltage.
   not yet ported into this package as reusable functions).
 - A DEVSIM-based example (recommended in Processing Instructions Section
   31 for device physics beyond what a compact model captures — not yet
-  built).
+  built). A drift-diffusion transient would also cross-check the
+  diode.py reverse-recovery model including junction capacitance.
 - More schemdraw circuit-building blocks (common-source stage,
   differential pair, current mirror, cascode — discussed but not yet
   built).
