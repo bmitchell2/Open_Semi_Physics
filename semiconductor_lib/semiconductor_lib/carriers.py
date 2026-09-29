@@ -2,7 +2,8 @@
 Carrier statistics from effective masses and the Fermi level: Fermi-Dirac
 occupation, 3-D density of states, effective density of states, and the
 numerical-integration cross-check of the Boltzmann closed forms. Backs the
-"Fermi Level and Carrier Statistics" note. Units: eV, cm^-3, K.
+"Fermi Level and Carrier Statistics" and "Degenerate Semiconductors" notes.
+Units: eV, cm^-3, K.
 """
 import numpy as np
 from scipy.integrate import quad
@@ -59,6 +60,35 @@ def fermi_potential(N, T=300.0, ni=ni300):
 def intrinsic_level_offset_eV(T=300.0):
     """Ei - midgap = -(kT/2) ln(Nc/Nv): about -7 meV in silicon at 300 K."""
     return -(KB_EV * T / 2) * np.log(dopants.Nc(T) / dopants.Nv(T))
+
+
+def density_numerical_wide(Ec_minus_EF, m_rel, T=300.0, kT_span=25.0):
+    """
+    Like density_numerical(), but sets the integration ceiling wide enough
+    (kT_span kT above EF, or above Ec if that is higher) to stay accurate
+    when EF sits near or inside the band (degenerate case), where the
+    Fermi tail extends well past a fixed 1 eV ceiling. Used to cross-check
+    the Boltzmann form against the exact Fermi-Dirac integral all the way
+    from non-degenerate into degenerate doping; see the "Degenerate
+    Semiconductors" note.
+    """
+    E_max = max(1.0, -Ec_minus_EF + kT_span * KB_EV * T)
+    return density_numerical(Ec_minus_EF, m_rel, T, E_max=E_max)
+
+
+def boltzmann_validity_ratio(Ec_minus_EF, m_rel, T=300.0):
+    """
+    Ratio of the Boltzmann closed form to the exact numerically-integrated
+    Fermi-Dirac density, n_Boltzmann / n_exact, as a function of Ec-EF
+    (eV; negative once EF crosses into the conduction band). Close to 1
+    while non-degenerate (Ec-EF >> kT) and grows above 1 as EF approaches
+    or enters the band, because the Boltzmann form keeps growing
+    exponentially while Pauli exclusion caps the true occupation.
+    """
+    Ec_minus_EF = np.atleast_1d(np.asarray(Ec_minus_EF, dtype=float))
+    n_exact = np.array([density_numerical_wide(x, m_rel, T) for x in Ec_minus_EF])
+    n_boltz = boltzmann_density(Ec_minus_EF, effective_dos(m_rel, T), T)
+    return n_boltz / n_exact
 
 
 def ionized_donor_fraction_fixed_EF(Ec_minus_EF, Ed=0.045, T=300.0, g=2):
