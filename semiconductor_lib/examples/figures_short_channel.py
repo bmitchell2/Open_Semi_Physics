@@ -13,20 +13,20 @@ NA=2e18; tox=2.0e-7; Cox=cox_from_tox(tox); Wd=sc.depletion_width_at_threshold(N
 
 # ---- Figure 1: Yau charge-sharing roll-off ----
 fig,ax=plt.subplots(1,2,figsize=(8.6,3.4))
-L=np.linspace(25e-7,300e-7,60)
+L=np.linspace(25e-7,300e-7,40)
 for xj,c in [(10,COLORS['blue']),(20,COLORS['purple']),(40,COLORS['red'])]:
-    ax[0].plot(L*1e7,1e3*sc.yau_charge_sharing_dvt(NA,Cox,L,xj*1e-7),color=c,label=f'$x_j$ = {xj} nm')
-ax[0].set_xlabel('Channel length L (nm)'); ax[0].set_ylabel(r'$V_T$ reduction $\Delta V_T$ (mV)')
+    ax[0].plot(L*1e7,1e3*sc.yau_charge_sharing_dvt(NA,Cox,L,xj*1e-7),color=c,label=f'xj = {xj} nm')
+ax[0].set_xlabel('Channel length L (nm)'); ax[0].set_ylabel('VT reduction ΔVT (mV)')
 ax[0].set_title('(a) Roll-off vs L', fontsize=10); ax[0].legend(frameon=False); ax[0].set_xlim(25,300); ax[0].set_ylim(0,300)
-r=np.logspace(-2,2,80); xj=r*Wd
+r=np.logspace(-2,2,40); xj=r*Wd
 d=1e3*sc.yau_charge_sharing_dvt(NA,Cox,40e-7,xj)
 ax[1].loglog(r,d,color='k',label='Yau model')
 pre=q*NA*Wd/Cox/40e-7
-ax[1].loglog(r[r<1],1e3*pre*np.sqrt(2*Wd*xj[r<1]),'--',color=COLORS['blue'],label=r'shallow: $\propto\sqrt{x_j}$')
+ax[1].loglog(r[r<1],1e3*pre*np.sqrt(2*Wd*xj[r<1]),'--',color=COLORS['blue'],label='shallow: ∝ √xj')
 ax[1].loglog(r[r>1],1e3*pre*Wd*np.ones((r>1).sum()),'--',color=COLORS['red'],label='deep: saturates')
-ax[1].set_xlabel(r'$x_j/W_d$'); ax[1].set_ylabel(r'$\Delta V_T$ at L = 40 nm (mV)')
+ax[1].set_xlabel('xj / Wd'); ax[1].set_ylabel('ΔVT at L = 40 nm (mV)')
 ax[1].set_title('(b) Dependence on junction depth', fontsize=10); ax[1].legend(frameon=False,fontsize=8)
-fig.text(0.5,-0.02,r'Analytical charge-sharing model (Yau): $N_A$=2e18 cm$^{-3}$, EOT = 2 nm, $W_d$ = 25 nm. Illustrative, not measured; linear in 1/L so it overstates roll-off at short L.',ha='center',fontsize=7.5)
+fig.text(0.5,-0.02,'Analytical charge-sharing model (Yau): NA = 2e18 cm⁻³, EOT = 2 nm, Wd = 25 nm. Illustrative, not measured; linear in 1/L so it overstates roll-off at short L.',ha='center',fontsize=7.5)
 fig.tight_layout(); fig.savefig('raw1.svg',bbox_inches='tight'); plt.close(fig)
 
 # ---- Figure 2: cross-section, shallow vs deep junction ----
@@ -37,7 +37,7 @@ def xsec(ax,xj,title):
     ax.text(Lc/2,tox_d+5,'Gate',ha='center',va='center',color='w',fontsize=8)
     for x0,lab in [(-20,'S'),(Lc,'D')]:
         ax.add_patch(Rectangle((x0,-xj),20,xj,color='#8fb3f0')); ax.text(x0+10,-xj/2,lab+' (n+)',ha='center',va='center',fontsize=8)
-    ax.plot([-20,Lc+20],[-Wdn,-Wdn],':',color='k',lw=0.8); ax.text(Lc+19,-Wdn-4,'depletion edge $W_d$',ha='right',fontsize=7)
+    ax.plot([-20,Lc+20],[-Wdn,-Wdn],':',color='k',lw=0.8); ax.text(Lc+19,-Wdn-4,'depletion edge Wd',ha='right',fontsize=7)
     # shared charge wedges (charge controlled by S/D, Yau trapezoid picture)
     for side in [0,1]:
         xe=0 if side==0 else Lc; sgn=1 if side==0 else -1
@@ -48,8 +48,8 @@ def xsec(ax,xj,title):
     ax.text(Lc*0.62,-min(xj,Wdn)*0.7-4,'drain field',fontsize=7,color=COLORS['red'],ha='center')
     ax.set_xlim(-20,Lc+20); ax.set_ylim(-60,16); ax.set_aspect('equal'); ax.axis('off'); ax.set_title(title,fontsize=9)
 fig,ax=plt.subplots(1,2,figsize=(8.2,3.6))
-xsec(ax[0],10,'Shallow junction, $x_j$ = 10 nm'); xsec(ax[1],40,'Deep junction, $x_j$ = 40 nm')
-fig.text(0.5,-0.04,'Tan wedges: depletion charge imaged by S/D instead of the gate (charge-sharing wedges, width from the Yau model).\nThe drain sidewall facing the channel grows with $x_j$, so drain-to-barrier coupling grows too. Schematic, 1:1 scale, L = 40 nm.',ha='center',fontsize=7.5,linespacing=1.6)
+xsec(ax[0],10,'Shallow junction, xj = 10 nm'); xsec(ax[1],40,'Deep junction, xj = 40 nm')
+fig.text(0.5,-0.04,'Tan wedges: depletion charge imaged by S/D instead of the gate (charge-sharing wedges, width from the Yau model).\nThe drain sidewall facing the channel grows with xj, so drain-to-barrier coupling grows too. Schematic, 1:1 scale, L = 40 nm.',ha='center',fontsize=7.5,linespacing=1.6)
 fig.savefig('raw2.svg',bbox_inches='tight'); plt.close(fig)
 
 # ---- Figure 3: bulk vs FDSOI cross-sections ----
@@ -67,7 +67,7 @@ for x0 in [-20,30]: a.add_patch(Rectangle((x0,-7),20,7,color='#8fb3f0')); a.add_
 a.text(15,-3.5,'Si 7 nm',ha='center',va='center',fontsize=7); a.text(-10,3,'raised S/D',ha='center',fontsize=6); a.text(15,-45,'substrate / back gate',ha='center',fontsize=8)
 a.set_title('UTBB FDSOI (28 nm-class)',fontsize=9)
 for a in ax: a.set_xlim(-20,50); a.set_ylim(-60,14); a.set_aspect('equal'); a.axis('off')
-fig.text(0.5,0.0,'Schematic, approximately to scale. In FDSOI the film thickness replaces both $x_j$ and $W_d$: no silicon lies far from the gate.',ha='center',fontsize=7.5)
+fig.text(0.5,0.0,'Schematic, approximately to scale. In FDSOI the film thickness replaces both xj and Wd: no silicon lies far from the gate.',ha='center',fontsize=7.5)
 fig.savefig('raw3.svg',bbox_inches='tight'); plt.close(fig)
 import os
 for i,n in [(1,'sce_vt_rolloff_xj.svg'),(2,'sce_xsec_shallow_vs_deep.svg'),(3,'bulk_vs_fdsoi_xsec.svg')]:
