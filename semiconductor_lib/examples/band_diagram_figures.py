@@ -13,6 +13,9 @@ import numpy as np
 from semiconductor_lib.plotting import apply_style, COLORS, full_minify_pipeline
 apply_style()
 import matplotlib.pyplot as plt
+# Plain Unicode labels, no mathtext: mathtext is written as per-glyph tspans
+# and roughly doubles the SVG (see semiconductor_lib/figures.py).
+plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 8})
 from semiconductor_lib.band_diagrams import (
     pn_band_diagram, lateral_surface_potential, threshold_voltage_q2d,
     gaussian_pocket_profile, EG_SI)
@@ -21,12 +24,12 @@ out = sys.argv[1] if len(sys.argv) > 1 else "."
 C = COLORS
 
 # ---------------------------------------------------------------- p-n grid
-cases = [("Symmetric  $N_A=N_D=10^{17}$", 1e17, 1e17),
-         ("Degenerate P$^+$N$^+$  $N_A=N_D=5\\times10^{19}$", 5e19, 5e19),
-         ("One-sided N$^+$P  $N_A=10^{16}$, $N_D=10^{20}$", 1e16, 1e20),
-         ("One-sided P$^+$N  $N_A=10^{20}$, $N_D=10^{16}$", 1e20, 1e16)]
-biases = [(0.0, "Equilibrium, $V_A=0$"), (0.5, "Forward, $V_A=+0.5$ V"),
-          (-1.0, "Reverse, $V_A=-1.0$ V")]
+cases = [("Symmetric  NA = ND = 10¹⁷ cm⁻³", 1e17, 1e17),
+         ("Degenerate P⁺N⁺  NA = ND = 5×10¹⁹ cm⁻³", 5e19, 5e19),
+         ("One-sided N⁺P  NA = 10¹⁶, ND = 10²⁰ cm⁻³", 1e16, 1e20),
+         ("One-sided P⁺N  NA = 10²⁰, ND = 10¹⁶ cm⁻³", 1e20, 1e16)]
+biases = [(0.0, "Equilibrium, VA = 0"), (0.5, "Forward, VA = +0.5 V"),
+          (-1.0, "Reverse, VA = −1.0 V")]
 fig, axs = plt.subplots(4, 3, figsize=(10, 11), sharey='row')
 for i, (title, NA, ND) in enumerate(cases):
     ref = pn_band_diagram(NA, ND, -1.0)
@@ -39,16 +42,16 @@ for i, (title, NA, ND) in enumerate(cases):
         d = pn_band_diagram(NA, ND, VA, x=x)
         xn = x * 1e7
         ax.axvspan(-d['xp'] * 1e7, d['xn'] * 1e7, color='0.92', lw=0)
-        ax.plot(xn, d['Ec'], color=C['blue'], lw=1.6, label='$E_c$')
-        ax.plot(xn, d['Ev'], color=C['purple'], lw=1.6, label='$E_v$')
+        ax.plot(xn, d['Ec'], color=C['blue'], lw=1.6, label='Ec')
+        ax.plot(xn, d['Ev'], color=C['purple'], lw=1.6, label='Ev')
         def flat(yv, **kw):
             m = ~np.isnan(yv)
             ax.plot([xn[m][0], xn[m][-1]], [yv[m][0], yv[m][0]], '--', **kw)
         if VA == 0:
-            flat(np.zeros_like(xn), color=C['green'], lw=1.2, label='$E_F$')
+            flat(np.zeros_like(xn), color=C['green'], lw=1.2, label='EF')
         else:
-            flat(d['EFn'], color=C['blue'], lw=1.1, label='$E_{Fn}$')
-            flat(d['EFp'], color=C['red'], lw=1.1, label='$E_{Fp}$')
+            flat(d['EFn'], color=C['blue'], lw=1.1, label='EFn')
+            flat(d['EFp'], color=C['red'], lw=1.1, label='EFp')
         ax.text(0.03, 0.04, 'P', transform=ax.transAxes, fontsize=10,
                 color=C['purple'], fontweight='bold')
         ax.text(0.93, 0.04, 'N', transform=ax.transAxes, fontsize=10,
@@ -73,10 +76,10 @@ full_minify_pipeline(f"{out}/_pn.svg", f"{out}/pn_band_diagrams_bias_doping.svg"
 tox = 2e-7
 Lsd = 20e-7            # drawn width of the n+ source/drain regions in the plot
 uni = lambda y: 2e18 * np.ones_like(y)
-devs = [("Long channel, $L$ = 1 µm, uniform $N_A=2\\times10^{18}$", 1e-4,
+devs = [("Long channel, L = 1 µm, uniform NA = 2×10¹⁸", 1e-4,
          lambda L: uni),
-        ("Short, $L$ = 40 nm, no pocket", 40e-7, lambda L: uni),
-        ("Short, $L$ = 40 nm, with pockets", 40e-7,
+        ("Short, L = 40 nm, no pocket", 40e-7, lambda L: uni),
+        ("Short, L = 40 nm, with pockets", 40e-7,
          lambda L: gaussian_pocket_profile(L, 1e18, 5e18, 8e-7))]
 fig = plt.figure(figsize=(11.5, 3.9))
 gs = fig.add_gridspec(1, 4, width_ratios=[0.55, 0.55, 1, 1], wspace=0.08)
@@ -99,7 +102,7 @@ for axes, (title, L, prof) in panels:
         Ecs = np.r_[Ec[0], Ec, Ec[-1]]
         for ax in axes:
             ax.plot(ys, Ecs, color=col, lw=1.8,
-                    label=f"$E_c$, $V_{{DS}}$ = {VDS:g} V "
+                    label=f"Ec, VDS = {VDS:g} V "
                           f"(barrier {s['barrier']:.2f} eV)")
             ax.plot([y[-1], ys[-1]], [-VDS, -VDS], '--', color=col, lw=1.1)
     for ax in axes:
@@ -119,9 +122,9 @@ for axes, (title, L, prof) in panels:
         axes[0].set_xlabel('y from source (nm)')
         axes[1].set_xlabel('... to drain (nm)')
         axes[0].legend(fontsize=6.5, loc='lower left', frameon=False)
-        axes[0].text(0.03, 0.93, 'n$^+$ S', transform=axes[0].transAxes,
+        axes[0].text(0.03, 0.93, 'n⁺ S', transform=axes[0].transAxes,
                      fontsize=8)
-        axes[1].text(0.6, 0.93, 'n$^+$ D', transform=axes[1].transAxes,
+        axes[1].text(0.6, 0.93, 'n⁺ D', transform=axes[1].transAxes,
                      fontsize=8)
     else:
         ax = axes[0]
@@ -131,7 +134,7 @@ for axes, (title, L, prof) in panels:
         ax.set_xlabel('y, source → drain (nm)')
         ax.tick_params(labelleft=False)
         ax.legend(fontsize=7, loc='lower left', frameon=False)
-a0.set_ylabel('Energy along surface (eV)\n(0 = source $E_F$)')
+a0.set_ylabel('Energy along surface (eV)\n(0 = source EF)')
 fig.subplots_adjust(left=0.07, right=0.99, bottom=0.14, top=0.9)
 fig.savefig(f"{out}/_lat.svg")
 full_minify_pipeline(f"{out}/_lat.svg", f"{out}/mosfet_lateral_band_dibl.svg")
@@ -156,16 +159,21 @@ Lnm = Ls * 1e7
 for name, col in [("no pocket", C['red']), ("pocket", C['blue'])]:
     r = res[name]
     axs[0].plot(Lnm, r[:, 0], '-o', ms=3, color=col,
-                label=f"{name}, $V_{{DS}}$ = 0.05 V")
+                label=f"{name}, VDS = 0.05 V")
     axs[0].plot(Lnm, r[:, 1], '--s', ms=3, color=col,
-                label=f"{name}, $V_{{DS}}$ = 1.1 V")
+                label=f"{name}, VDS = 1.1 V")
     axs[1].plot(Lnm, r[:, 2], '-o', ms=3, color=col, label=name)
 axs[0].set_xscale('log'); axs[1].set_xscale('log')
+from matplotlib.ticker import FixedLocator, FixedFormatter, NullLocator
+for a in axs:
+    a.xaxis.set_major_locator(FixedLocator([30, 50, 100, 200, 500]))
+    a.xaxis.set_major_formatter(FixedFormatter(['30', '50', '100', '200', '500']))
+    a.xaxis.set_minor_locator(NullLocator())
 axs[0].set_xlabel('Gate length L (nm)'); axs[1].set_xlabel('Gate length L (nm)')
-axs[0].set_ylabel('$V_T$ (V)')
+axs[0].set_ylabel('VT (V)')
 axs[0].set_title('Threshold roll-off, RSCE and DIBL', fontsize=10)
-axs[1].set_ylabel('Source barrier at $V_G$ = 0 (eV)')
-axs[1].set_title('Off-state barrier at $V_{DS}$ = 1.1 V', fontsize=10)
+axs[1].set_ylabel('Source barrier at VG = 0 (eV)')
+axs[1].set_title('Off-state barrier at VDS = 1.1 V', fontsize=10)
 axs[1].axhspan(0, 4 * 0.02585, color='0.9', lw=0)
 axs[1].text(150, 0.04, 'barrier < 4kT:\npunch-through', fontsize=7.5)
 axs[0].legend(fontsize=7, frameon=False)
