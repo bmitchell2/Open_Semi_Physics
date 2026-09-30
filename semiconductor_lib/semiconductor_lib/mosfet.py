@@ -34,9 +34,20 @@ from .constants import q, eps_si, eps_ox, ni300, thermal_voltage
 # --------------------------------------------------------------------------
 # Basic electrostatic quantities
 # --------------------------------------------------------------------------
+def _ni(T):
+    """Intrinsic density (cm^-3) at temperature T, the dopants.py Ioffe fit
+    rescaled so ni(300 K) = ni300 (same convention as diode.ni_T)."""
+    if T == 300.0:
+        return ni300
+    from . import dopants
+    return ni300 * dopants.intrinsic_concentration(T) / dopants.intrinsic_concentration(300.0)
+
+
 def phi_F(N_A, T=300.0):
-    """Bulk Fermi potential (V) of a p-type body."""
-    return thermal_voltage(T) * np.log(N_A / ni300)
+    """Bulk Fermi potential (V) of a p-type body, phi_t ln(N_A / ni(T)).
+    ni is temperature dependent, so phi_F (and hence V_T) falls as T rises;
+    identical to the earlier ni300-based value at 300 K."""
+    return thermal_voltage(T) * np.log(N_A / _ni(T))
 
 
 def cox_from_tox(tox_cm, eps=eps_ox):
