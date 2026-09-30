@@ -45,13 +45,6 @@ pip install -e .
   Miller multiplication, charge control (Q = I tau, C_diff), short-base transit
   time, Kingston storage time, and a finite-difference reverse-recovery
   transient (matches Kingston within 1 %). Tests: `tests/test_diode.py`.
-- `semiconductor_lib/short_channel.py` — short-channel electrostatics: Yau
-  charge-sharing V_T roll-off with explicit junction depth (sqrt(x_j) regime
-  for x_j << W_d, saturation for x_j >> W_d), Brews et al. (1980) empirical
-  L_min, Hu's l_d ~ (T_oxe W_dep X_j)^(1/3) ratio, and quasi-2D scale lengths
-  for bulk (Liu 1993), single-gate FD-SOI (Young 1989) and double gate.
-  Tests: `tests/test_short_channel.py`. Figures for the Short-Channel Effects
-  and SOI pages: `examples/figures_short_channel.py`.
 - `semiconductor_lib/oxidation.py` — Deal-Grove thermal oxidation
   (thickness, time, tau, (111)/(100) orientation factor, silicon consumption).
 - `semiconductor_lib/bands.py` — silicon effective masses and band-curvature
@@ -73,6 +66,18 @@ pip install -e .
   capacitance, reverse recovery) and MOS capacitor (band diagram at VG = 0,
   W and Qinv vs VG) figures; `build_all(outdir)` writes minified SVGs of
   6-16 KB. Tests: `tests/test_figures_devices.py`.
+- `semiconductor_lib/leakage.py` — field-driven junction leakage: reduced
+  doping N_eff, abrupt-junction peak field, uniform-field (Kane) band-to-band
+  tunnelling current density with a `B_override` for model sensitivity, and
+  the classical overlap-GIDL surface field (Chan et al. 1987). Absolute BTBT
+  magnitude is model-dependent; the doping/field trend is the robust output.
+  Tests: `tests/test_leakage_multigate.py`.
+- `semiconductor_lib/multigate.py` — natural (scale) length
+  λ = √(εsi t tox / N εox) for 1-4 equivalent gates (Colinge 2004) and the
+  5λ minimum-gate-length estimate. Tests: `tests/test_leakage_multigate.py`.
+- `semiconductor_lib/figures_leakage.py` — generators for the GIDL/pocket
+  junction-field-and-BTBT figure and the multigate natural-length figure;
+  minified SVGs of about 9 KB. Tests: `tests/test_figures_leakage.py`.
 - `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
   Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
 - `semiconductor_lib/reliability.py` — percolation breakdown concept model,
@@ -109,9 +114,9 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 126 tests currently pass (as of 2026-09-29, including 12 in
-`test_diode.py`, 6 in `test_figures_devices.py` and 8 in
-`test_short_channel.py`). Two of the
+All 127 tests currently pass (as of 2026-09-29, including 12 in
+`test_diode.py`, 6 in `test_figures_devices.py`, 6 in
+`test_leakage_multigate.py` and 3 in `test_figures_leakage.py`). Two of the
 electrostatics tests are worth knowing about if they ever look like they've
 "regressed":
 
