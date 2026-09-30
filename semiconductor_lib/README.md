@@ -78,6 +78,18 @@ pip install -e .
   capacitance, reverse recovery) and MOS capacitor (band diagram at VG = 0,
   W and Qinv vs VG) figures; `build_all(outdir)` writes minified SVGs of
   6-16 KB. Tests: `tests/test_figures_devices.py`.
+- `semiconductor_lib/leakage.py` — field-driven junction leakage: reduced
+  doping N_eff, abrupt-junction peak field, uniform-field (Kane) band-to-band
+  tunnelling current density with a `B_override` for model sensitivity, and
+  the classical overlap-GIDL surface field (Chan et al. 1987). Absolute BTBT
+  magnitude is model-dependent; the doping/field trend is the robust output.
+  Tests: `tests/test_leakage_multigate.py`.
+- `semiconductor_lib/multigate.py` — natural (scale) length
+  λ = √(εsi t tox / N εox) for 1-4 equivalent gates (Colinge 2004) and the
+  5λ minimum-gate-length estimate. Tests: `tests/test_leakage_multigate.py`.
+- `semiconductor_lib/figures_leakage.py` — generators for the GIDL/pocket
+  junction-field-and-BTBT figure and the multigate natural-length figure;
+  minified SVGs of about 9 KB. Tests: `tests/test_figures_leakage.py`.
 - `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
   Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
 - `semiconductor_lib/reliability.py` — percolation breakdown concept model,
@@ -114,8 +126,9 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 129 tests currently pass (as of 2026-09-30, including 12 in
-`test_diode.py`, 6 in `test_figures_devices.py` and 11 in
+All 151 tests currently pass (as of 2026-09-30, including 12 in
+`test_diode.py`, 6 in `test_figures_devices.py`, 6 in
+`test_leakage_multigate.py`, 3 in `test_figures_leakage.py` and 11 in
 `test_band_diagrams.py`). Two of the
 electrostatics tests are worth knowing about if they ever look like they've
 "regressed":
