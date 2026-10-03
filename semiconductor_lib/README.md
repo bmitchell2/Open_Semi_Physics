@@ -90,6 +90,13 @@ pip install -e .
 - `semiconductor_lib/figures_leakage.py` — generators for the GIDL/pocket
   junction-field-and-BTBT figure and the multigate natural-length figure;
   minified SVGs of about 9 KB. Tests: `tests/test_figures_leakage.py`.
+- `semiconductor_lib/implant_dosimetry.py` — beamline implanter dosimetry and
+  angle sensitivity: charge-exchange ion survival, pressure-compensation
+  K-factor (I_dose = I_meas exp(KP), US 6,657,209) with residual-error and
+  fit helpers, decel energy-contamination fraction and depth ratio, and tilt
+  geometry (lateral reach and shadow-edge sensitivity). Tests:
+  `tests/test_implant_dosimetry.py`; figure script
+  `examples/implant_dosimetry_figures.py` (~11 KB SVG).
 - `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
   Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
 - `semiconductor_lib/reliability.py` — percolation breakdown concept model,
@@ -126,7 +133,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 151 tests currently pass (as of 2026-09-30, including 12 in
+All 206 tests currently pass (as of 2026-10-03, including 9 in
+`test_implant_dosimetry.py`, 12 in
 `test_diode.py`, 6 in `test_figures_devices.py`, 6 in
 `test_leakage_multigate.py`, 3 in `test_figures_leakage.py` and 11 in
 `test_band_diagrams.py`). Two of the
