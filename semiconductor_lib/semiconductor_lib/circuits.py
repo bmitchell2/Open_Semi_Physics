@@ -75,3 +75,29 @@ def radar_transit_route(filename):
         out = flow.Box(w=2.0, h=1.1).label('Range /\nVelocity').linestyle('--')
         d += out
     return d
+
+
+def inverting_charge_pump(filename):
+    """Four-switch inverting charge pump (flying capacitor). Phase 1 (S1,S3)
+    charges C_fly to V_in; phase 2 (S2,S4) grounds its top plate so its
+    bottom plate, and C_out, go to -V_in. Visually verified 2026-10-03."""
+    with schemdraw.Drawing(file=filename, show=False) as d:
+        d.config(fontsize=11, unit=2.4)
+        vin = d.add(elm.SourceV().up().label("$V_{in}$", loc="top"))
+        d.add(elm.Ground().at(vin.start))
+        d.add(elm.Switch().right().at(vin.end).label("S1 ($\\phi_1$)"))
+        top = d.add(elm.Dot())
+        d.add(elm.Capacitor().down().label("$C_{fly}$", loc="top", ofst=0.25))
+        bot = d.add(elm.Dot())
+        d.add(elm.Line().right(2.4).at(top.center))
+        d.add(elm.Switch().down().label("S2 ($\\phi_2$)", loc="bottom"))
+        d.add(elm.Ground())
+        d.add(elm.Switch().down().at(bot.center).label("S3 ($\\phi_1$)", loc="top"))
+        d.add(elm.Ground())
+        d.add(elm.Line().right(1.8).at(bot.center))
+        d.add(elm.Line().down(1.6))
+        d.add(elm.Switch().right().label("S4 ($\\phi_2$)", loc="bottom"))
+        out = d.add(elm.Dot().label("$V_{out}\\approx -V_{in}$", loc="right"))
+        d.add(elm.Capacitor().down().at(out.center).label("$C_{out}$", loc="bottom"))
+        d.add(elm.Ground())
+    return d
