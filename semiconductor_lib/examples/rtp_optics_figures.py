@@ -43,7 +43,7 @@ ax.set_xlabel("Wavelength (µm)"); ax.set_ylabel("Absorption coefficient α (cm�
 ax.set_ylim(1e-2, 1e7); ax.set_xlim(0.3, 2.6)
 ax.text(1.65, 2.5, "dotted: free-carrier term only\nmarkers: fits to measured data", fontsize=8)
 sec = ax.secondary_yaxis("right", functions=(lambda a: 1e4 / np.clip(a, 1e-12, None), lambda d: 1e4 / np.clip(d, 1e-12, None)))
-sec.set_ylabel("1/e depth (µm)")
+sec.set_ylabel("1/e depth (µm)"); sec.minorticks_off(); ax.minorticks_off()
 ax.legend(fontsize=8, loc="upper right")
 ax.set_title("Silicon absorption: room temperature vs RTP temperatures", fontsize=10)
 fig.tight_layout(); fig.savefig("raw2.svg"); plt.close(fig)
@@ -55,7 +55,7 @@ for lm, c in [(1.1, "#9467bd"), (1.31, "#1f77b4"), (1.54, "#2ca02c"), (2.3, "#d6
     ax.semilogy(T, o.absorption_depth_um(o.timans_alpha(lm, T)), color=c, label=f"{lm} µm")
 ax.axhline(775, color="gray", ls="--", lw=1); ax.text(705, 830, "300 mm wafer thickness (775 µm)", fontsize=8, color="gray")
 ax.set_xlabel("Wafer temperature (°C)"); ax.set_ylabel("1/e absorption depth (µm)")
-ax.set_ylim(1, 2000); ax.legend(fontsize=8, title="Wavelength", title_fontsize=8)
+ax.minorticks_off(); ax.set_ylim(1, 2000); ax.legend(fontsize=8, title="Wavelength", title_fontsize=8)
 ax.set_title("Lightly doped Si: absorption depth vs temperature (Timans model)", fontsize=10)
 fig.tight_layout(); fig.savefig("raw3.svg"); plt.close(fig)
 
