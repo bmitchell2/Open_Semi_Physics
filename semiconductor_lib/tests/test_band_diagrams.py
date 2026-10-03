@@ -87,3 +87,25 @@ def test_reverse_short_channel_effect_with_pockets():
                                 tox, ncrit)
           for L in (200e-7, 60e-7, 40e-7)]
     assert vt[0] < vt[1] < vt[2]                # V_T rises as L shrinks
+
+
+def test_current_criterion_vt_long_limit_and_rsce():
+    """Constant-current V_T: uniform long device matches the minimum-density
+    criterion; a pocketed device tends to the channel-centre V_T at long L and
+    rises monotonically as L shrinks (reverse short-channel effect)."""
+    from semiconductor_lib.band_diagrams import (
+        threshold_voltage_q2d_current, pocket_lpe0)
+    tox, ncrit = 2e-7, 2e18
+    uni = lambda y: 1e18 * np.ones_like(y)
+    v_min = threshold_voltage_q2d(1e-4, 0.05, uni, tox, ncrit, npts=1601)
+    v_cur = threshold_voltage_q2d_current(1e-4, 0.05, uni, tox, ncrit,
+                                          npts=1601)
+    assert v_cur == pytest.approx(v_min, abs=3e-3)
+    Ls = np.array([40, 60, 100, 200, 500, 3000]) * 1e-7
+    vts = [threshold_voltage_q2d_current(
+        L, 0.05, gaussian_pocket_profile(L, 1e18, 5e18, 8e-7), tox, ncrit,
+        npts=3001 if L > 5e-5 else 801) for L in Ls]
+    assert all(a > b for a, b in zip(vts[:-1], vts[1:]))   # RSCE: rises as L falls
+    assert vts[-1] == pytest.approx(v_min, abs=5e-3)       # long-L limit
+    assert pocket_lpe0(1e18, 5e18, 8e-7) == pytest.approx(
+        5 * 8e-7 * np.sqrt(2 * np.pi))

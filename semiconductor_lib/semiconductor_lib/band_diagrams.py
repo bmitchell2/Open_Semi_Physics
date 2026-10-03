@@ -200,3 +200,41 @@ def gaussian_pocket_profile(L, N_ch, N_pk, sigma):
         return (N_ch + N_pk * np.exp(-y**2 / (2 * sigma**2))
                 + N_pk * np.exp(-(L - y)**2 / (2 * sigma**2)))
     return N
+
+
+def threshold_voltage_q2d_current(L, VDS, N_of_y, tox, n_crit, T=300.0, **kw):
+    """V_T by a constant-current (length-weighted) criterion.
+
+    At low V_DS the subthreshold channel acts as resistances in series, so the
+    drain current per square is proportional to the harmonic-mean surface
+    electron density  n_eff = L / integral(dy / n(y)),  n = n_i exp(phi_s/V_t).
+    V_T is the gate voltage at which n_eff = n_crit. Unlike the minimum-density
+    criterion of threshold_voltage_q2d, this weights each region by its length,
+    so short high-barrier pockets matter in proportion to how much of the
+    channel they occupy. This mirrors a measured constant-current V_T
+    (I_D = I_crit * W/L) and gives the gradual reverse short-channel rise of a
+    pocketed device; as L -> infinity it returns the uniform channel-centre
+    V_T. Valid at low V_DS only (series-resistance picture)."""
+    Vt = thermal_voltage(T)
+    ln_crit = np.log(n_crit / ni300)
+
+    def f(VG):
+        s = lateral_surface_potential(L, VG, VDS, N_of_y, tox, T=T, **kw)
+        x = -s['phi_s'] / Vt
+        m = x.max()
+        e = np.exp(x - m)
+        integ = np.sum(0.5 * (e[1:] + e[:-1]) * np.diff(s['y']))  # trapezoid
+        # ln(n_eff / n_i) = ln L - ln integral(exp(-phi/Vt) dy)
+        return (np.log(L) - m - np.log(integ)) - ln_crit
+    return brentq(f, -2.0, 3.0, xtol=1e-5)
+
+
+def pocket_lpe0(N_ch, N_pk, sigma):
+    """Lateral-average-doping length LPE0 (cm) of two Gaussian pockets
+    (gaussian_pocket_profile): the channel-average doping is
+    N_ch * (1 + LPE0 / L) with LPE0 = N_pk * sigma * sqrt(2 pi) / N_ch, i.e.
+    the integrated lateral pocket dose of both pockets divided by N_ch.
+    This is the physical meaning of the BSIM4 LPE0 parameter; the fitted
+    BSIM4 value is usually smaller because the averaging picture overstates
+    the pocket's effect (see threshold_voltage_q2d_current)."""
+    return N_pk * sigma * np.sqrt(2 * np.pi) / N_ch
