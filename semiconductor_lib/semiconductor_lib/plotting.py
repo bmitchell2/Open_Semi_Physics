@@ -40,6 +40,10 @@ def minify_svg(path_in, path_out):
     with open(path_in, 'r') as f:
         s = f.read()
     s = re.sub(r'<metadata>.*?</metadata>', '', s, flags=re.DOTALL)
+    s = re.sub(r'<!--.*?-->', '', s, flags=re.DOTALL)
+    # collapse matplotlib's long fallback font list to a short generic stack
+    s = re.sub(r'font-family="\'DejaVu Sans\', \'Bitstream Vera Sans\'[^"]*"',
+               'font-family="\'DejaVu Sans\', sans-serif"', s)
     s = re.sub(r'<!DOCTYPE[^>]*>\s*', '', s)
     s = re.sub(r'-?\d+\.\d{3,}', lambda m: f"{float(m.group(0)):.2f}", s)
     s = re.sub(r'>\s+<', '><', s)
