@@ -108,6 +108,24 @@ pip install -e .
   `tests/test_implant_anneal.py` (dose conservation, TED tail spreading,
   peak pinning, interface uptake/saturation, 1000 C 10 s boron sqrt(Dt) ~3.9
   nm); figure script `examples/implant_anneal_figures.py` (10-15 KB SVGs).
+- `semiconductor_lib/high_field.py` — high-field transport: Canali bulk
+  velocity-field curve (Jacoboni/Canali parameters), inversion-layer
+  velocity saturation (V_Dsat, I_Dsat, L-independence limit), universal
+  inversion-layer mobility fit (del Alamo 6.720), effective field with
+  eta = 1/2 (electrons) and 1/3 (holes), illustrative Matthiessen split.
+- `semiconductor_lib/lithography.py` — Rayleigh resolution/DOF, k1 = 0.25
+  two-beam limit, coherent grating aerial image from captured orders
+  (on-axis or dipole), photon shot noise vs dose and wavelength,
+  swing-curve / interferometric-endpoint period, Gaussian implant-mask
+  transmission, Tanaka capillary-collapse stress.
+- `semiconductor_lib/plasma.py` — Debye length, Bohm velocity, floating
+  potential, Child-law sheath thickness, ion mean free path, ion arrival
+  angle, capacitive area-ratio voltage scaling.
+- `examples/ngspice_vsat_crosscheck.py` — I_Dsat vs L from the PTM 180 nm
+  BSIM3 card versus the analytic velocity-saturation models (L_eff and
+  knee-current method; results in the docstring).
+- `examples/high_field_litho_plasma_figures.py` — figures for the velocity
+  saturation, mobility, lithography, EUV and plasma notes.
 - `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
   Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
 - `semiconductor_lib/reliability.py` — percolation breakdown concept model,
@@ -130,6 +148,10 @@ pip install -e .
   `bands.py`, `carriers.py` and `transport.py` (masses, Hu examples,
   numerical-vs-Boltzmann carrier density, Einstein relation, resistivity,
   equilibrium drift/diffusion cancellation).
+- `tests/test_high_field_litho_plasma.py` — physics validation for
+  `high_field.py`, `lithography.py` and `plasma.py` (velocity-saturation
+  limits, universal mobility, k1 = 0.25 limit, order capture and aerial-image
+  contrast, photon counts, Child-law scaling, argon floating potential).
 - `tests/test_figures.py` — every figure builds with the expected panels,
   and the minified SVGs are well-formed and under 30 KB.
 - `examples/ngspice_moscap_cv.py` — cross-check of the hand-derived
@@ -144,8 +166,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 230 tests currently pass (as of 2026-10-04, including 9 in
-`test_implant_anneal.py`, 9 in
+All 258 tests currently pass (as of 2026-10-04, including 21 in
+`test_high_field_litho_plasma.py`, 9 in `test_implant_anneal.py`, 9 in
 `test_implant_dosimetry.py`, 12 in
 `test_diode.py`, 6 in `test_figures_devices.py`, 6 in
 `test_leakage_multigate.py`, 3 in `test_figures_leakage.py` and 11 in
