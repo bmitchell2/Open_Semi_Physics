@@ -97,6 +97,17 @@ pip install -e .
   geometry (lateral reach and shadow-edge sensitivity). Tests:
   `tests/test_implant_dosimetry.py`; figure script
   `examples/implant_dosimetry_figures.py` (~11 KB SVG).
+- `semiconductor_lib/implant_anneal.py` — post-implant anneal models:
+  intrinsic boron diffusivity (0.76 exp(-3.46 eV/kT)), backward-Euler 1-D
+  diffusion with a decaying TED supersaturation S(t)=1+S0 exp(-t/tau) and an
+  optional immobile (clustered) peak, the integrated TED budget, Arrhenius
+  defect-dissolution time ratio (Ea ~3.8 eV, Stolk et al. 1997), trap-limited
+  release of implanted nitrogen to a Si/SiO2 interface sink with optional
+  capacity saturation (after Adam et al. 2000; Dokumaci et al. 2001), and the
+  amorphous/crystalline (EOR) depth from a damage profile. Tests:
+  `tests/test_implant_anneal.py` (dose conservation, TED tail spreading,
+  peak pinning, interface uptake/saturation, 1000 C 10 s boron sqrt(Dt) ~3.9
+  nm); figure script `examples/implant_anneal_figures.py` (10-15 KB SVGs).
 - `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
   Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
 - `semiconductor_lib/reliability.py` — percolation breakdown concept model,
@@ -133,7 +144,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 206 tests currently pass (as of 2026-10-03, including 9 in
+All 230 tests currently pass (as of 2026-10-04, including 9 in
+`test_implant_anneal.py`, 9 in
 `test_implant_dosimetry.py`, 12 in
 `test_diode.py`, 6 in `test_figures_devices.py`, 6 in
 `test_leakage_multigate.py`, 3 in `test_figures_leakage.py` and 11 in
