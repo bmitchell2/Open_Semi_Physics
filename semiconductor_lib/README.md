@@ -121,6 +121,15 @@ pip install -e .
 - `semiconductor_lib/plasma.py` — Debye length, Bohm velocity, floating
   potential, Child-law sheath thickness, ion mean free path, ion arrival
   angle, capacitive area-ratio voltage scaling.
+- `semiconductor_lib/deposition.py` — Grove two-resistance CVD rate,
+  Knudsen-regime (Thiele) reactant depletion down a via or trench,
+  steady-state Berg model of reactive sputtering (target poisoning and
+  flow hysteresis), Stoney film stress.
+- `semiconductor_lib/thermal_budget.py` — sum of D*t over a step list,
+  equivalent time at a reference temperature, D*t over a ramped profile,
+  interstitial Fe and Cu diffusivity and Fe solubility in Si (gettering).
+- `examples/deposition_thermal_figures.py` — figures for the CVD,
+  reactive-sputtering and gettering notes.
 - `examples/ngspice_vsat_crosscheck.py` — I_Dsat vs L from the PTM 180 nm
   BSIM3 card versus the analytic velocity-saturation models (L_eff and
   knee-current method; results in the docstring).
@@ -152,6 +161,11 @@ pip install -e .
   `high_field.py`, `lithography.py` and `plasma.py` (velocity-saturation
   limits, universal mobility, k1 = 0.25 limit, order capture and aerial-image
   contrast, photon counts, Child-law scaling, argon floating potential).
+- `tests/test_deposition_thermal_budget.py` — physics validation for
+  `deposition.py` and `thermal_budget.py` (Grove limits, 1/cosh depletion
+  trend and small-phi expansion, Berg metallic-to-poisoned transition and
+  hysteresis removal by pumping, Stoney magnitude, boron D*t for 1 h at
+  800 C versus 15 min at 900 C, Fe crossing a wafer in about an hour).
 - `tests/test_figures.py` — every figure builds with the expected panels,
   and the minified SVGs are well-formed and under 30 KB.
 - `examples/ngspice_moscap_cv.py` — cross-check of the hand-derived
@@ -166,7 +180,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 258 tests currently pass (as of 2026-10-04, including 21 in
+All 268 tests currently pass (as of 2026-10-07, including 10 in
+`test_deposition_thermal_budget.py`, 21 in
 `test_high_field_litho_plasma.py`, 9 in `test_implant_anneal.py`, 9 in
 `test_implant_dosimetry.py`, 12 in
 `test_diode.py`, 6 in `test_figures_devices.py`, 6 in
