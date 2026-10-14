@@ -11,6 +11,9 @@ via_bottom_to_top      : Knudsen-diffusion / first-order-loss (Thiele) estimate
 berg_reactive_sputter  : Steady-state Berg model of reactive sputtering
                          (target poisoning and the flow hysteresis loop).
 stoney_stress          : Film stress from substrate curvature (Stoney).
+wire_size_effect       : Surface-scattering resistivity of a thin wire (Dingle).
+lined_plug_resistance  : Contact plug resistance with a conformal liner (core
+                         in parallel with liner annulus, bottom liner in series).
 molecular_flux_per_Pa  : Hertz-Knudsen impingement flux.
 
 Units are SI unless a docstring says otherwise.
@@ -128,3 +131,40 @@ def stoney_stress(E_s, nu_s, t_s, t_f, R_before, R_after):
     curvature convention makes a tensile film concave on the film side
     (R > 0 for film-side-concave)."""
     return E_s * t_s ** 2 / (6.0 * (1.0 - nu_s) * t_f) * (1.0 / R_after - 1.0 / R_before)
+
+
+# ------------------------------------------------------- contact plug fill
+def wire_size_effect(rho0, lam, d, p=0.0):
+    """Approximate resistivity of a cylindrical conductor of diameter d with
+    surface scattering (Dingle thick-wire limit of Fuchs-Sondheimer):
+        rho/rho0 = 1 + (3/4)(1-p) lam/d
+    rho0 bulk resistivity, lam bulk electron mean free path (same length unit
+    as d), p specularity (0 = fully diffuse). Valid for d >~ lam; grain-
+    boundary scattering is not included, so it is a lower bound on rho."""
+    d = np.asarray(d, float)
+    return rho0 * (1.0 + 0.75 * (1.0 - p) * lam / d)
+
+
+def lined_plug_resistance(d, L, t_liner, rho_fill, rho_liner, lam_fill=None,
+                          p=0.0, bottom_liner=True):
+    """Resistance (ohm) of a cylindrical contact plug of diameter d and height
+    L (m) lined with a conformal liner of thickness t_liner (m).
+
+    Model: fill core (radius d/2 - t) in parallel with the liner annulus along
+    the height L, plus, if bottom_liner, a liner disc of thickness t and full
+    area pi d^2/4 in series (current must cross it). rho in ohm*m. If lam_fill
+    (m) is given, the core resistivity includes the surface-scattering
+    correction for the core diameter. Interface and silicide contact
+    resistance are not included. If the liner fills the hole (t >= d/2) the
+    plug is all liner and R = rho_liner*(L + t)/(pi d^2/4)."""
+    d = np.asarray(d, float)
+    rc = d / 2.0 - t_liner
+    rho_c = (wire_size_effect(rho_fill, lam_fill, 2.0 * np.maximum(rc, 1e-30), p)
+             if lam_fill is not None else rho_fill)
+    A_core = np.pi * np.maximum(rc, 0.0) ** 2
+    A_ann = np.pi * (d / 2.0) ** 2 - A_core
+    G = A_core / (rho_c * L) + A_ann / (rho_liner * L)
+    R = 1.0 / G
+    if bottom_liner:
+        R = R + rho_liner * t_liner / (np.pi * (d / 2.0) ** 2)
+    return R
