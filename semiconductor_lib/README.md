@@ -125,11 +125,20 @@ pip install -e .
   Knudsen-regime (Thiele) reactant depletion down a via or trench,
   steady-state Berg model of reactive sputtering (target poisoning and
   flow hysteresis), Stoney film stress.
+- `semiconductor_lib/doped_glass.py` — BPSG wt% (elemental B, P) to
+  network-former fractions and mean network connectivity.
+- `semiconductor_lib/polysilicon.py` — self-consistent Seto grain-boundary
+  model (partial and full grain depletion), poly resistivity and Hall
+  mobility, TCR and zero-TCR doping, SPC (Avrami) grain-size and
+  crystallization-time scaling from nucleation/growth activation energies,
+  grain-counting resistor mismatch with a Monte Carlo check.
 - `semiconductor_lib/thermal_budget.py` — sum of D*t over a step list,
   equivalent time at a reference temperature, D*t over a ramped profile,
   interstitial Fe and Cu diffusivity and Fe solubility in Si (gettering).
 - `examples/deposition_thermal_figures.py` — figures for the CVD,
   reactive-sputtering and gettering notes.
+- `examples/polysilicon_figures.py` — SPC grain size/time vs temperature,
+  poly resistivity and TCR vs doping for several grain sizes.
 - `examples/ngspice_vsat_crosscheck.py` — I_Dsat vs L from the PTM 180 nm
   BSIM3 card versus the analytic velocity-saturation models (L_eff and
   knee-current method; results in the docstring).
@@ -166,6 +175,14 @@ pip install -e .
   trend and small-phi expansion, Berg metallic-to-poisoned transition and
   hysteresis removal by pumping, Stoney magnitude, boron D*t for 1 h at
   800 C versus 15 min at 900 C, Fe crossing a wafer in about an hour).
+- `tests/test_polysilicon.py` — Seto critical doping (3.34e12 cm^-2 /
+  20 nm = 1.67e18), Hall-mobility minimum between 1e18 and 3e18 (Seto
+  measured ~2e18; model gives 1.6e18), heavy-doping convergence to single
+  crystal with positive TCR, negative TCR and 0.3-0.6 eV activation at light
+  doping, zero-TCR doping falling with grain size, SPC trends, and the
+  grain-counting mismatch formula against Monte Carlo.
+- `tests/test_doped_glass.py` — 4 wt% B / 4 wt% P BPSG has about 21% B and
+  7% P among network formers and mean connectivity about 3.72.
 - `tests/test_figures.py` — every figure builds with the expected panels,
   and the minified SVGs are well-formed and under 30 KB.
 - `examples/ngspice_moscap_cv.py` — cross-check of the hand-derived
@@ -180,7 +197,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 268 tests currently pass (as of 2026-10-07, including 10 in
+All 288 tests currently pass (as of 2026-10-15, including 9 in
+`test_polysilicon.py`, 1 in `test_doped_glass.py`, 10 in
 `test_deposition_thermal_budget.py`, 21 in
 `test_high_field_litho_plasma.py`, 9 in `test_implant_anneal.py`, 9 in
 `test_implant_dosimetry.py`, 12 in
