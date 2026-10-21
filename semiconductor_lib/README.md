@@ -117,7 +117,8 @@ pip install -e .
   two-beam limit, coherent grating aerial image from captured orders
   (on-axis or dipole), photon shot noise vs dose and wavelength,
   swing-curve / interferometric-endpoint period, Gaussian implant-mask
-  transmission, Tanaka capillary-collapse stress.
+  transmission, Tanaka capillary-collapse stress, scanner focus offset for a depth in resist (paraxial index ratio) and mid-resist focus offset.
+- `semiconductor_lib/cmp.py` — CMP rate laws (Preston and threshold/non-Prestonian), carrier/platen relative-velocity kinematics, stiff-pad bending length on a compliant subpad, and an up/down-area step-height model with contact height for pattern-density planarization, including the threshold-slurry stall step. Tests: `tests/test_cmp.py` (uniform speed at matched RPM, force balance, exponential Preston step decay, analytic stall step).
 - `semiconductor_lib/plasma.py` — Debye length, Bohm velocity, floating
   potential, Child-law sheath thickness, ion mean free path, ion arrival
   angle, capacitive area-ratio voltage scaling.
@@ -197,7 +198,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 288 tests currently pass (as of 2026-10-15, including 9 in
+All 298 tests currently pass (as of 2026-10-20, including 10 in
+`test_cmp.py`, 9 in
 `test_polysilicon.py`, 1 in `test_doped_glass.py`, 10 in
 `test_deposition_thermal_budget.py`, 21 in
 `test_high_field_litho_plasma.py`, 9 in `test_implant_anneal.py`, 9 in
