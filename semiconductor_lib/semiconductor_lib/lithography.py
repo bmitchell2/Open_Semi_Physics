@@ -131,3 +131,19 @@ def proximity_resolution(lam_nm, gap_nm):
     """Order-of-magnitude Fresnel-limited proximity-print resolution,
     sqrt(lambda g) (nm)."""
     return np.sqrt(lam_nm * gap_nm)
+
+
+def scanner_defocus_for_depth(depth_nm, n_resist, n_medium=1.0):
+    """Paraxial scanner focus offset (nm, measured in the medium above
+    the resist: air for dry tools, water for immersion) that moves the
+    focal plane a distance depth_nm into a resist of index n_resist.
+    A converging beam refracting into a denser medium focuses deeper by
+    the index ratio, so the stage moves only depth * n_medium/n_resist.
+    High-NA (non-paraxial) rays deviate from this; sign conventions for
+    'into the resist' differ between scanner makers."""
+    return depth_nm * n_medium / n_resist
+
+
+def mid_resist_focus_offset(t_resist_nm, n_resist, n_medium=1.0):
+    """Paraxial offset that places best focus at mid-thickness."""
+    return scanner_defocus_for_depth(0.5 * t_resist_nm, n_resist, n_medium)
