@@ -13,6 +13,11 @@ Engineering-level helpers used on the Semiconductor Notes CMP pages:
   for megasonic cleaning.
 * Electrolyte Debye length (symmetric 1:1 electrolyte) and the
   Smoluchowski zeta potential from electrophoretic mobility.
+* DLVO particle-surface interaction energy for a sphere near a flat
+  wall (Derjaguin): non-retarded van der Waals -A R/(6D) plus the
+  weak-overlap (linear superposition) double-layer repulsion
+  64 pi eps R (kT/e)^2 g1 g2 exp(-kappa D), g = tanh(e psi/4kT).
+  Used to show how ionic strength and zeta potential set the energy barrier.
 * Pad-conditioner coverage: largest radial sweep speed that leaves no
   unconditioned ring between successive platen revolutions.
 * Run-to-run (R2R) polish-time control: feedforward of incoming
@@ -87,6 +92,43 @@ def zeta_smoluchowski_V(mobility_m2_Vs, eta_Pa_s=0.89e-3, eps_r=78.5):
     """Zeta potential (V) from electrophoretic mobility, Smoluchowski limit
     (thin double layer: particle radius >> Debye length)."""
     return np.asarray(mobility_m2_Vs) * eta_Pa_s / (eps_r * EPS0)
+
+
+def vdw_sphere_plate_J(D_m, R_m, A_H_J):
+    """Non-retarded van der Waals energy (J) of a sphere (radius R_m) at
+    gap D_m from a flat surface, Hamaker constant A_H_J (particle-medium-
+    surface).  Valid for D << R.  Force magnitude is A_H R / (6 D^2)."""
+    return -A_H_J * R_m / (6.0 * np.asarray(D_m, dtype=float))
+
+
+def edl_sphere_plate_J(D_m, R_m, psi1_V, psi2_V, I_molar, T_K=298.15,
+                       eps_r=78.5):
+    """Double-layer interaction energy (J), sphere-plate, 1:1 electrolyte,
+    linear superposition approximation (valid for kappa D >~ 1, R >> 1/kappa).
+    Same-sign potentials repel (positive energy); opposite signs attract.
+    Use zeta potentials as the effective psi values."""
+    kT_e = K_B * T_K / Q
+    g1 = np.tanh(psi1_V / (4 * kT_e))
+    g2 = np.tanh(psi2_V / (4 * kT_e))
+    kappa = 1.0 / debye_length_electrolyte_m(I_molar, T_K, eps_r)
+    return (64 * np.pi * eps_r * EPS0 * R_m * kT_e ** 2 * g1 * g2
+            * np.exp(-kappa * np.asarray(D_m, dtype=float)))
+
+
+def dlvo_sphere_plate_J(D_m, R_m, A_H_J, psi1_V, psi2_V, I_molar,
+                        T_K=298.15, eps_r=78.5):
+    """Total DLVO energy (J): van der Waals plus double layer."""
+    return (vdw_sphere_plate_J(D_m, R_m, A_H_J)
+            + edl_sphere_plate_J(D_m, R_m, psi1_V, psi2_V, I_molar, T_K, eps_r))
+
+
+def dlvo_barrier_kT(R_m, A_H_J, psi1_V, psi2_V, I_molar, T_K=298.15,
+                    D_min_m=0.3e-9, D_max_m=50e-9, n=4000):
+    """Height (in kT) of the DLVO energy maximum between D_min and D_max;
+    returns 0 if the curve has no positive maximum (no barrier)."""
+    D = np.linspace(D_min_m, D_max_m, n)
+    V = dlvo_sphere_plate_J(D, R_m, A_H_J, psi1_V, psi2_V, I_molar, T_K)
+    return max(0.0, float(V.max()) / (K_B * T_K))
 
 
 # ------------------------------------------------------- pad conditioning

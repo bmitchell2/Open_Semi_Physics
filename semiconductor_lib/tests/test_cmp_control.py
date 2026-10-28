@@ -81,3 +81,38 @@ def test_r2r_on_target_without_drift_or_noise():
     inc = np.linspace(780, 820, n)
     out, _, _ = c.r2r_simulate(rate, inc, 300.0, 4.0, 0.3)
     assert np.allclose(out, 300.0)
+
+
+# ---------------------------------------------------------------- DLVO
+R50, A_SIO2 = 50e-9, 0.8e-20
+
+
+def test_vdw_force_matches_hamaker_sphere_plate():
+    D, h = 0.4e-9, 1e-14
+    F = -(c.vdw_sphere_plate_J(D + h, R50, A_SIO2)
+          - c.vdw_sphere_plate_J(D - h, R50, A_SIO2)) / (2 * h)
+    assert F == pytest.approx(-A_SIO2 * R50 / (6 * D ** 2), rel=1e-6)  # attractive
+    assert abs(F) == pytest.approx(0.42e-9, rel=0.05)                   # ~0.4 nN
+
+
+def test_edl_sign_and_debye_decay():
+    lam = c.debye_length_electrolyte_m(1e-3)
+    V1 = c.edl_sphere_plate_J(5e-9, R50, -0.04, -0.04, 1e-3)
+    V2 = c.edl_sphere_plate_J(5e-9 + lam, R50, -0.04, -0.04, 1e-3)
+    assert V1 > 0                                   # like charges repel
+    assert V2 / V1 == pytest.approx(np.exp(-1), rel=1e-9)
+    assert c.edl_sphere_plate_J(5e-9, R50, -0.04, 0.04, 1e-3) < 0  # opposite attract
+
+
+def test_barrier_collapses_with_ionic_strength():
+    b = [c.dlvo_barrier_kT(R50, A_SIO2, -0.04, -0.04, I)
+         for I in (1e-4, 1e-3, 1e-2, 1e-1)]
+    assert all(x > y for x, y in zip(b, b[1:]))     # monotone decrease
+    assert b[1] > 20                                # dilute clean: large barrier
+    assert b[3] < 0.6 * b[1]                        # salt shrinks it at fixed zeta
+    # weakly charged particle at slurry-like ionic strength: no barrier at all
+    assert c.dlvo_barrier_kT(R50, A_SIO2, -0.015, -0.015, 0.1) == 0.0
+
+
+def test_barrier_vanishes_at_iep():
+    assert c.dlvo_barrier_kT(R50, A_SIO2, 0.0, -0.04, 1e-3) == 0.0
