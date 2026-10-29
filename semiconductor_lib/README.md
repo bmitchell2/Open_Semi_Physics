@@ -136,6 +136,22 @@ pip install -e .
 - `semiconductor_lib/thermal_budget.py` — sum of D*t over a step list,
   equivalent time at a reference temperature, D*t over a ramped profile,
   interstitial Fe and Cu diffusivity and Fe solubility in Si (gettering).
+- `semiconductor_lib/laser_stitching.py` — line-beam laser-anneal stitch
+  simulator (erf flat-top long-axis profile with tilt/ripple, per-pass
+  power and lateral error, Arrhenius activation with a second-pass
+  efficacy gamma), zero-to-peak FFT scaling, least-squares harmonic fit,
+  odd/even split of the 1/(2p) harmonic series, phase folding, moving-
+  average detrend (window must be 2p), and the collinear four-point-probe
+  reciprocity sensitivity kernel and transfer function H(f).
+- `examples/laser_stitching_figures.py` — fail-mode, FFT, folding, probe,
+  sampling and matching figures for the laser-anneal stitching note.
+- `examples/fpp_fd_crosscheck.py` — finite-difference resistor-network
+  check of the 4PP transfer function (agreement within 0.01 in H).
+- `tests/test_laser_stitching.py` — ln2/pi kernel normalization, H(f)
+  against the finite-difference values, micro-4PP transparency, p-periodic
+  identical passes with no odd harmonics, linear odd harmonic in power
+  mismatch, sine recovery by fold and harmonic fit, FFT scaling, and the
+  2p detrend window.
 - `examples/deposition_thermal_figures.py` — figures for the CVD,
   reactive-sputtering and gettering notes.
 - `examples/polysilicon_figures.py` — SPC grain size/time vs temperature,
@@ -198,7 +214,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 298 tests currently pass (as of 2026-10-20, including 10 in
+All 329 tests currently pass (as of 2026-10-28, including 11 in
+`test_laser_stitching.py`, 10 in
 `test_cmp.py`, 9 in
 `test_polysilicon.py`, 1 in `test_doped_glass.py`, 10 in
 `test_deposition_thermal_budget.py`, 21 in
@@ -253,3 +270,7 @@ relative to the model's threshold voltage.
 - More schemdraw circuit-building blocks (common-source stage,
   differential pair, current mirror, cascode — discussed but not yet
   built).
+- `laser_stitching.rs_temperature_sensitivity` assumes all passes shift
+  together in power; changing the `T_peak` argument of `simulate_rs` does
+  not move Rs because b_n is normalized to T_peak. Use relative pass power
+  to model temperature changes.
