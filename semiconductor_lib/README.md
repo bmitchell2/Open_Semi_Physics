@@ -163,6 +163,13 @@ pip install -e .
   saturation, mobility, lithography, EUV and plasma notes.
 - `semiconductor_lib/lifetime.py` — SRH generation lifetime vs. doping,
   Zerbst transient simulation/extraction, DLTS Arrhenius extraction.
+- `semiconductor_lib/geometry_cv.py` — geometry dependence of MOS C-V:
+  area/perimeter least-squares extraction at each bias, inversion-layer
+  distributed-RC admittance and time constant tau = L^2/(k mu Vov)
+  (k = 12 both ends, 3 one end), and parallel-mode series-resistance
+  distortion. Tested in `tests/test_geometry_cv.py` (low-frequency limit
+  C_ox W L in series with R_ch/12 or R_ch/3; synthetic-component recovery).
+  Figures: `examples/geometry_cv_figures.py`.
 - `semiconductor_lib/reliability.py` — percolation breakdown concept model,
   Weibull extrinsic/intrinsic population separation (TDDB, RVS).
 - `semiconductor_lib/plotting.py` — shared matplotlib style preset and the
@@ -214,7 +221,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 329 tests currently pass (as of 2026-10-28, including 11 in
+All 338 tests currently pass (as of 2026-10-30, including 9 in
+`test_geometry_cv.py`, 11 in
 `test_laser_stitching.py`, 10 in
 `test_cmp.py`, 9 in
 `test_polysilicon.py`, 1 in `test_doped_glass.py`, 10 in
@@ -260,9 +268,10 @@ relative to the model's threshold voltage.
 
 ## What's not in here yet
 
-- Poly depletion, oxide-thickness/XRR, and series-resistance models
-  (built and verified in the 2026-09-05 "Moscaps and veractors" session,
-  not yet ported into this package as reusable functions).
+- Poly depletion and oxide-thickness/XRR models (built and verified in the
+  2026-09-05 "Moscaps and veractors" session, not yet ported into this
+  package as reusable functions). The parallel-mode series-resistance
+  distortion is now in `geometry_cv.parallel_mode_capacitance`.
 - A DEVSIM-based example (recommended in Processing Instructions Section
   31 for device physics beyond what a compact model captures — not yet
   built). A drift-diffusion transient would also cross-check the
