@@ -108,6 +108,17 @@ pip install -e .
   `tests/test_implant_anneal.py` (dose conservation, TED tail spreading,
   peak pinning, interface uptake/saturation, 1000 C 10 s boron sqrt(Dt) ~3.9
   nm); figure script `examples/implant_anneal_figures.py` (10-15 KB SVGs).
+- `semiconductor_lib/implant_profiles.py` — implanted-dopant depth
+  profiles: four-moment reduction of any profile (Rp, dRp, skewness,
+  kurtosis), dose-normalized Pearson IV profile from given moments (closed
+  form of Pearson's ODE, Gaussian limit at gamma=0, beta=3, Type IV bound
+  enforced), Gaussian peak Q/(sqrt(2 pi) dRp), and the analytic LSS range
+  chain (ZBL nuclear + LSS electronic stopping, Lindhard projection
+  R/(1+M2/3M1)). Tests: `tests/test_implant_profiles.py` (moments and dose
+  reproduced, peak deeper than Rp for gamma<0, LSS Rp 1.0-1.45x Gibbons-type
+  tables at 100 keV for B/P/As/Sb). Example `examples/srim_implant.py`:
+  pysrim-driven TRIM sweep with auto-sized target (needs SRIM + wine; not
+  run in CI).
 - `semiconductor_lib/high_field.py` — high-field transport: Canali bulk
   velocity-field curve (Jacoboni/Canali parameters), inversion-layer
   velocity saturation (V_Dsat, I_Dsat, L-independence limit), universal
@@ -221,7 +232,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-All 338 tests currently pass (as of 2026-10-30, including 9 in
+All 345 tests currently pass (as of 2026-11-01, including 7 in
+`test_implant_profiles.py`, 9 in
 `test_geometry_cv.py`, 11 in
 `test_laser_stitching.py`, 10 in
 `test_cmp.py`, 9 in
