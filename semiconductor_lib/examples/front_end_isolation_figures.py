@@ -43,7 +43,8 @@ N = np.logspace(15.5, 18, 60)
 for Qf, col, lab in ((0, C['blue'], 'Q_f = 0'), (1e11, C['green'], 'Q_f = 1×10¹¹ cm⁻²'), (1e12, C['red'], 'Q_f = 1×10¹² cm⁻² (e.g. after high total dose)')):
     ax.semilogx(N, fi.field_threshold(N, 300e-7, Qf), color=col, label=lab)
 ax.semilogx(N, fi.field_threshold(N, 400e-7), color=C['blue'], ls=':', label='Q_f = 0, 400 nm oxide')
-for v, txt, xt in ((1.1, 'core supply', 3.2e17), (5, '5 V I/O', 3.2e17), (40, '40 V routing', 4e15)):
+# supply-line labels sit at the right, clear of the legend and the curves
+for v, txt, xt in ((1.1, 'core supply', 3.2e17), (5, '5 V I/O', 3.2e17), (40, '40 V routing', 3.2e17)):
     ax.axhline(v, color=C['gray'], lw=0.8, ls='--'); ax.text(xt, v + 0.8, txt, fontsize=7.5, color=C['gray'])
 ax.set_xlabel('Acceptor doping at the trench surface, N_A (cm⁻³)'); ax.set_ylabel('Field transistor V_T (V)')
 ax.set_ylim(-5, 50); ax.legend(fontsize=7.5, loc='upper left')
