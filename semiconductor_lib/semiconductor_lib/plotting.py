@@ -44,6 +44,11 @@ def minify_svg(path_in, path_out):
     # collapse matplotlib's long fallback font list to a short generic stack
     s = re.sub(r'font-family="\'DejaVu Sans\', \'Bitstream Vera Sans\'[^"]*"',
                'font-family="\'DejaVu Sans\', sans-serif"', s)
+    # collapse any long fallback font stack in the style-attribute form
+    # (whatever the primary font is), e.g. "'Inter', 'DejaVu Sans', ..."
+    s = re.sub(r"font-family: ('[^']+')(, '[^']+')+(, sans-serif)?",
+               r"font-family: \1, sans-serif", s)
+    s = re.sub(r'<\?xml[^>]*\?>', '', s)
     s = re.sub(r'<!DOCTYPE[^>]*>\s*', '', s)
     s = re.sub(r'-?\d+\.\d{3,}', lambda m: f"{float(m.group(0)):.2f}", s)
     s = re.sub(r'>\s+<', '><', s)
