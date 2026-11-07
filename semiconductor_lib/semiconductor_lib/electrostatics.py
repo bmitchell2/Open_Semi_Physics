@@ -125,3 +125,38 @@ def max_depletion_width(N_A, T=300.0):
     Vt = thermal_voltage(T)
     phi_F = Vt * np.log(N_A / ni300)
     return np.sqrt(4 * eps_si * phi_F / (q * N_A))
+
+
+def surface_carrier_densities_p(psi_s, N_A, T=300.0):
+    """Surface hole and electron densities (cm^-3) of a p-type substrate
+    (non-degenerate, Boltzmann statistics) at band bending psi_s (V).
+
+    p_s = N_A exp(-psi_s/Vt), n_s = (ni^2/N_A) exp(psi_s/Vt).
+    Regime boundaries: psi_s < 0 accumulation; 0..phi_F depletion;
+    phi_F..2phi_F weak inversion (n_s > p_s); > 2phi_F strong inversion
+    (n_s > N_A). At psi_s = phi_F, n_s = p_s = ni; at 2phi_F, n_s = N_A.
+    """
+    Vt = thermal_voltage(T)
+    psi = np.asarray(psi_s, dtype=float)
+    p_s = N_A * np.exp(-psi / Vt)
+    n_s = (ni300 ** 2 / N_A) * np.exp(psi / Vt)
+    return p_s, n_s
+
+
+def fermi_potential_p(N_A, T=300.0):
+    """Bulk Fermi potential phi_F = (kT/q) ln(N_A/ni) (V) of p-type silicon."""
+    return thermal_voltage(T) * np.log(N_A / ni300)
+
+
+def oxide_field_and_drop(N_A, t_ox, T=300.0):
+    """Oxide field (V/cm) and oxide voltage drop (V) needed at threshold to
+    support the maximum depletion charge of a p-type substrate.
+
+    Gauss's law: E_ox = Q_dep/eps_ox, independent of oxide thickness;
+    V_ox = E_ox * t_ox = Q_dep/C_ox. t_ox in cm. Returns (Q_dep [C/cm^2],
+    E_ox [V/cm], V_ox [V]).
+    """
+    phi_F = fermi_potential_p(N_A, T)
+    Q_dep = np.sqrt(2 * eps_si * q * N_A * (2 * phi_F))
+    E_ox = Q_dep / eps_ox
+    return Q_dep, E_ox, E_ox * t_ox
