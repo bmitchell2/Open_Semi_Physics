@@ -96,3 +96,42 @@ def wpe_delta_vth(sc, d, kvth0we, web=0.0, wec=0.0, scref=1.0):
     """VTH0 shift (V) = KVTH0WE * (SCA + WEB*SCB + WEC*SCC)."""
     return kvth0we * (wpe_sca(sc, d, scref) + web * wpe_scb(sc, d, scref)
                       + wec * wpe_scc(sc, d, scref))
+
+
+# ------------------------------------------------- STI thermal mismatch
+# Origin of the LOD stress: the trench oxide relaxes by viscous flow above
+# roughly 950-975 C (EerNisse, APL 30, 290, 1977; APL 35, 8, 1979), so the
+# oxide/silicon pair is stress-free at that "freeze-in" temperature. On
+# cool-down silicon contracts more than SiO2, leaving the oxide plug
+# oversized for its trench and the active area in compression.
+
+_trapz = getattr(np, "trapezoid", None) or np.trapz
+ALPHA_SIO2 = 0.5e-6  # 1/K, fused/thermal silica, roughly constant 300-1300 K
+
+
+def alpha_si(T_K):
+    """Linear thermal expansion coefficient of silicon (1/K).
+
+    Okada & Tokumaru, J. Appl. Phys. 56, 314 (1984), empirical fit valid
+    120-1500 K:
+        alpha = (3.725*(1 - exp(-5.88e-3*(T - 124))) + 5.548e-4*T) * 1e-6
+    Gives 2.57e-6 /K at 300 K and about 4.4e-6 /K at 1250 K.
+    """
+    T = np.asarray(T_K, dtype=float)
+    return (3.725 * (1.0 - np.exp(-5.88e-3 * (T - 124.0)))
+            + 5.548e-4 * T) * 1e-6
+
+
+def sti_thermal_mismatch_strain(T_freeze_C, T_room_C=25.0,
+                                alpha_ox=ALPHA_SIO2, n=400):
+    """Free thermal-mismatch strain between Si and SiO2 on cool-down.
+
+    eps = integral_{T_room}^{T_freeze} (alpha_Si(T) - alpha_ox) dT
+
+    This is the unconstrained misfit (how much too large the oxide plug is
+    relative to its trench, as a fraction), not the stress in the channel,
+    which is a geometry-dependent fraction of E*eps. Positive means the
+    silicon ends up in compression next to the oxide.
+    """
+    T = np.linspace(T_room_C + 273.15, T_freeze_C + 273.15, n)
+    return float(_trapz(alpha_si(T) - alpha_ox, T))

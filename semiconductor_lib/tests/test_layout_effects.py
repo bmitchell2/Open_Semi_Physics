@@ -40,3 +40,24 @@ def test_wpe_point_device_limit_and_monotonic():
     assert np.allclose(le.wpe_sca(sc, 1e-6), 1 / sc**2, rtol=1e-4)
     dv = le.wpe_delta_vth(sc, 1.0, 0.02, web=1.0, wec=1.0)
     assert np.all(np.diff(dv) < 0) and np.all(dv > 0)
+
+
+def test_alpha_si_okada_values():
+    from semiconductor_lib.layout_effects import alpha_si
+    # Okada & Tokumaru: ~2.6e-6 at room temperature, rising with T
+    assert abs(alpha_si(300.0) - 2.57e-6) < 0.03e-6
+    assert 4.2e-6 < alpha_si(1250.0) < 4.6e-6
+    T = np.linspace(300, 1500, 50)
+    assert np.all(np.diff(alpha_si(T)) > 0)
+
+
+def test_sti_mismatch_strain_magnitude_and_limits():
+    from semiconductor_lib.layout_effects import sti_thermal_mismatch_strain
+    # no cool-down, no misfit
+    assert abs(sti_thermal_mismatch_strain(25.0)) < 1e-12
+    eps = sti_thermal_mismatch_strain(960.0)
+    # bounded by room-T and high-T alphas times delta T
+    assert (2.57e-6 - 0.5e-6) * 935 < eps < (4.4e-6 - 0.5e-6) * 935
+    assert 0.25e-2 < eps < 0.35e-2
+    # higher freeze-in temperature gives more misfit
+    assert sti_thermal_mismatch_strain(1050.0) > eps
