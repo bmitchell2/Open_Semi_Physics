@@ -50,7 +50,10 @@ def minify_svg(path_in, path_out):
                r"font-family: \1, sans-serif", s)
     s = re.sub(r'<\?xml[^>]*\?>', '', s)
     s = re.sub(r'<!DOCTYPE[^>]*>\s*', '', s)
-    s = re.sub(r'-?\d+\.\d{3,}', lambda m: f"{float(m.group(0)):.2f}", s)
+    # 3 decimals: scour writes relative path coordinates, so rounding errors
+    # accumulate along a line; 2 decimals let long lines drift off their
+    # markers by a visible fraction of a point.
+    s = re.sub(r'-?\d+\.\d{4,}', lambda m: f"{float(m.group(0)):.3f}", s)
     s = re.sub(r'>\s+<', '><', s)
     s = re.sub(r'[ \t]+', ' ', s)
     s = re.sub(r'\n+', '', s)
@@ -62,13 +65,17 @@ def minify_svg(path_in, path_out):
 def minify_with_scour(path_in, path_out):
     """Run `scour` (pip install scour) for structural SVG minification
     (id stripping, precision reduction, metadata removal). Run
-    minify_svg() on the result for a final whitespace pass."""
+    minify_svg() on the result for a final whitespace pass.
+
+    Precision 5 (3 for curve control points): scour emits relative path
+    coordinates, so lower precision accumulates along long lines and moves
+    plotted data off its markers (tests/test_svg_minify_fidelity.py)."""
     subprocess.run([
         "python3", "-m", "scour.scour",
         "-i", path_in, "-o", path_out,
         "--enable-id-stripping", "--shorten-ids",
         "--remove-metadata", "--strip-xml-prolog",
-        "--set-precision=2", "--create-groups",
+        "--set-precision=5", "--set-c-precision=3", "--create-groups",
     ], check=True, capture_output=True)
 
 
